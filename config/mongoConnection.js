@@ -3,6 +3,7 @@ let keys;
 
 if (!process.env['url_mongo']) {
   // keys = require('../keys.json');
+  console.log('ABC');
 }
 
 const url = process.env['url_mongo'] || keys.url_mongo;
