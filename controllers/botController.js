@@ -36,7 +36,7 @@ bot.on('messageCreate', (msg) => {
 const createCommands = () => {
   commands.push({
     name: 'Ping',
-    condition: (msg) => { return msg.content.startsWith('!xping'); },
+    condition: (msg) => { return msg.content.startsWith('!ping'); },
     action: (msg) => { bot.createMessage(msg.channel.id, 'Pong!'); }
   });
   commands.push({
@@ -46,72 +46,72 @@ const createCommands = () => {
   });
   commands.push({
     name: 'Start Battle',
-    condition: (msg) => { return msg.content.startsWith('!xbattle'); },
+    condition: (msg) => { return msg.content.startsWith('!battle'); },
     action: (msg) => { battleController.startBattle(msg, bot); }
   });
   commands.push({
     name: 'Join Battle',
-    condition: (msg) => { return msg.content.startsWith('!xjoin'); },
+    condition: (msg) => { return msg.content.startsWith('!join'); },
     action: (msg) => { battleController.joinBattle(msg); }
   });
   commands.push({
     name: 'Choose Char',
-    condition: (msg) => { return msg.content.startsWith('!xgo'); },
+    condition: (msg) => { return msg.content.startsWith('!go'); },
     action: (msg) => { battleController.chooseChar(msg); }
   });
   commands.push({
     name: 'Atk during battle',
-    condition: (msg) => { return msg.content.startsWith('!xatk'); },
+    condition: (msg) => { return msg.content.startsWith('!atk'); },
     action: (msg) => { battleController.executeAtk(msg); }
   });
   commands.push({
     name: 'Use skill battle',
-    condition: (msg) => { return msg.content.startsWith('!xuse'); },
+    condition: (msg) => { return msg.content.startsWith('!use'); },
     action: (msg) => { battleController.useSkill(msg); }
   });
   commands.push({
     name: 'Closing Battles',
-    condition: (msg) => { return msg.content.startsWith('!xend'); },
+    condition: (msg) => { return msg.content.startsWith('!end'); },
     action: (msg) => { battleController.endBattles(msg); }
   });
   commands.push({
     name: 'Test battle system',
-    condition: (msg) => { return msg.content.startsWith('!xtestjoin'); },
+    condition: (msg) => { return msg.content.startsWith('!testjoin'); },
     action: (msg) => { testBattle(msg); }
   });
   commands.push({
     name: 'Test go char',
-    condition: (msg) => { return msg.content.startsWith('!xtestgo'); },
+    condition: (msg) => { return msg.content.startsWith('!testgo'); },
     action: (msg) => { testChar(msg); }
   });
   commands.push({
     name: 'Test Atk',
-    condition: (msg) => { return msg.content.startsWith('!xtestatk'); },
+    condition: (msg) => { return msg.content.startsWith('!testatk'); },
     action: (msg) => { testAtk(msg); }
   });
   commands.push({
     name: 'Test skill',
-    condition: (msg) => { return msg.content.startsWith('!xtestuse'); },
+    condition: (msg) => { return msg.content.startsWith('!testuse'); },
     action: (msg) => { testSkill(msg); }
   });
 };
 
 const testBattle = (msg) => {
-  bot.createMessage(msg.channel.id, '!xjoin');
+  bot.createMessage(msg.channel.id, '!join');
 };
 
 const testChar = (msg) => {
   const charName = msg.content.split(' ').slice(1).join(' ');
-  bot.createMessage(msg.channel.id, '!xgo ' + charName);
+  bot.createMessage(msg.channel.id, '!go ' + charName);
 };
 
 const testAtk = (msg) => {
-  bot.createMessage(msg.channel.id, '!xatk');
+  bot.createMessage(msg.channel.id, '!atk');
 };
 
 const testSkill = (msg) => {
   const skillName = msg.content.split(' ').slice(1).join(' ');
-  bot.createMessage(msg.channel.id, '!xuse ' + skillName);
+  bot.createMessage(msg.channel.id, '!use ' + skillName);
 };
 
 const showHelp = (msg) => {

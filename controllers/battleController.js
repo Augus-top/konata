@@ -11,8 +11,7 @@ exports.setBot = (b) => {
 exports.startBattle = (msg) => {
   const currentBattle = battles.filter(b => b.place === msg.channel.id);
   if (currentBattle[0]) {
-    bot.createMessage(msg.channel.id, 'Battle already happening in this channel');
-    return;
+    return bot.createMessage(msg.channel.id, 'Battle already happening in this channel');
   }
   const newBattle = {
     firstPlayer: msg.author.id,
@@ -26,12 +25,10 @@ exports.startBattle = (msg) => {
 exports.joinBattle = (msg) => {
   const currentBattle = battles.filter(b => b.place === msg.channel.id);
   if (!currentBattle[0]) {
-    bot.createMessage(msg.channel.id, 'No battles current in this channel');
-    return;
+    return bot.createMessage(msg.channel.id, 'No battles current in this channel');
   }
   if (currentBattle[0].firstPlayer && currentBattle[0].secondPlayer) {
-    bot.createMessage(msg.channel.id, 'Battle already has two players');
-    return;
+    return bot.createMessage(msg.channel.id, 'Battle already has two players');
   }
   currentBattle[0].secondPlayer = msg.author.id;
   currentBattle[0].lastActionTime = moment().format() + '';
@@ -53,6 +50,10 @@ exports.chooseChar = (msg) => {
   if (currentBattle[userPosition + 'Char']) {
     return bot.createMessage(msg.channel.id, 'Already choosed!');
   }
+  this.updateBattleChar(msg, currentBattle, charName, userPosition);
+};
+
+exports.updateBattleChar = (msg, currentBattle, charName, userPosition) => {
   currentBattle[userPosition + 'Char'] = createChar(charName);
   bot.createMessage(msg.channel.id, `Choosed ${charName}!`);
   if (currentBattle.firstPlayerChar && currentBattle.secondPlayerChar) {
@@ -120,6 +121,7 @@ const createChar = (charName) => {
   };
   return newChar;
 };
+
 
 exports.endBattles = (msg) => {
   battles = battles.filter(b => b.place !== msg.channel.id);
