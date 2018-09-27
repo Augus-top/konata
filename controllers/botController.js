@@ -2,11 +2,11 @@ const Eris = require('eris');
 const battleController = require('./battleController');
 let keys;
 
-if (!process.env.heroku) {
+if (!process.env['bot_token']) {
   keys = require('../keys.json');
 }
 
-const botToken = process.env.bot_token || keys.bot_token;
+const botToken = process.env['bot_token'] || keys.bot_token;
 const bot = new Eris(botToken);
 const commands = [];
 
