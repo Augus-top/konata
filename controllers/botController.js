@@ -60,6 +60,11 @@ const createCommands = () => {
     action: (msg) => { battleController.chooseChar(msg); }
   });
   commands.push({
+    name: 'Set Char Image',
+    condition: (msg) => { return msg.content.startsWith('!setImage'); },
+    action: (msg) => { battleController.setCharImage(msg); }
+  });
+  commands.push({
     name: 'Atk during battle',
     condition: (msg) => { return msg.content.startsWith('!atk'); },
     action: (msg) => { battleController.executeAtk(msg); }

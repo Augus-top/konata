@@ -53,6 +53,20 @@ exports.chooseChar = (msg) => {
   this.updateBattleChar(msg, currentBattle, charName, userPosition);
 };
 
+exports.setCharImage = (msg) => {
+  const user = msg.author.id;
+  let currentBattle = battles.filter(b => b.place === msg.channel.id);
+
+  currentBattle = currentBattle[0];
+  if (!currentBattle && (currentBattle.firstPlayer !== user || currentBattle.secondPlayer !== user)) {
+    return bot.createMessage(msg.channel.id, 'You\'re not in battle!');
+  }
+  const charImage = msg.content.split(' ').slice(1).join(' ');
+  
+  const userChar = (user === currentBattle.firstPlayer) ? currentBattle.firstPlayerChar : currentBattle.secondPlayerChar;
+  userChar.image = charImage;
+};
+
 exports.updateBattleChar = (msg, currentBattle, charName, userPosition) => {
   currentBattle[userPosition + 'Char'] = createChar(charName);
   bot.createMessage(msg.channel.id, `Choosed ${charName}!`);
@@ -93,7 +107,28 @@ exports.useSkill = (msg) => {
   const skillAtk = utils.generateRandomInteger(1, 100);
   const dmg = (skillAtk > battleTurn.enemyChar.def) ? skillAtk : Math.round(skillAtk / 2);
   battleTurn.enemyChar.hp -= dmg;
-  bot.createMessage(msg.channel.id, `${battleTurn.userChar.name} used ${skillName}!\n${battleTurn.enemyChar.name} suffered ${dmg} points of damage!`);
+  bot.createMessage(msg.channel.id, {"embed":{
+    "title": battleTurn.userChar.name + ' used '+skillName,
+    "color": 703991,    
+    "thumbnail": {
+      "url": battleTurn.userChar.image
+    },
+    "image": {
+      "url": battleTurn.userChar.image
+    },
+    "author": {
+      "name": "author name",
+      "url": "https://discordapp.com",
+      "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
+    },
+    "fields": [
+      {
+        "name": "🤔",
+        "value": battleTurn.enemyChar.name + ' suffered '+dmg+' points of damage'
+      }
+    ]
+  }});
+  //bot.createMessage(msg.channel.id, `${battleTurn.userChar.name} used ${skillName}!\n${battleTurn.enemyChar.name} suffered ${dmg} points of damage!`);
   this.checkBattleState(msg, battleTurn.currentBattle);
 };
 
@@ -117,7 +152,8 @@ const createChar = (charName) => {
     hp: utils.generateRandomInteger(50, 100),
     atk: utils.generateRandomInteger(20, 100),
     def: utils.generateRandomInteger(20, 99),
-    speed: utils.generateRandomInteger(1, 100)
+    speed: utils.generateRandomInteger(1, 100),
+    image: 'https://vignette.wikia.nocookie.net/ultimate-pokemon-fanon/images/8/85/Missingno_drawing_by_aerostat-d4krmly.jpg/revision/latest?cb=20130916223342'
   };
   return newChar;
 };
