@@ -3,7 +3,8 @@ const battleController = require('./battleController');
 let keys;
 
 if (!process.env['bot_token']) {
-  // keys = require('../keys.json');
+  console.log('ABC');
+  keys = require('../keys.json');
 }
 
 const botToken = process.env['bot_token'] || keys.bot_token;
