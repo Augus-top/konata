@@ -28,7 +28,4 @@ console.log(`Connected on port ${port}`);
 
 botController.connectBot();
 
-console.log(process.env['url_mongo']);
-console.log(process.env.url_mongo);
-
 module.exports = app;

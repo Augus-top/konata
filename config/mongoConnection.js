@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 let keys;
 
 if (!process.env['url_mongo']) {
-  console.log('ABC');
   keys = require('../keys.json');
 }
 

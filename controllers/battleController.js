@@ -17,7 +17,7 @@ exports.startBattle = (msg) => {
   const newBattle = {
     firstPlayer: msg.author.id,
     place: msg.channel.id,
-    lastActionTime: moment().format()
+    lastActionTime: moment().format() + ''
   };
   battles.push(newBattle);
   bot.createMessage(msg.channel.id, 'Waiting for challenger');
@@ -34,7 +34,7 @@ exports.joinBattle = (msg) => {
     return;
   }
   currentBattle[0].secondPlayer = msg.author.id;
-  currentBattle[0].lastActionTime = moment().format();
+  currentBattle[0].lastActionTime = moment().format() + '';
   bot.createMessage(msg.channel.id, `Starting battle between <@${currentBattle[0].firstPlayer}> and <@${currentBattle[0].secondPlayer}>!\nChoose your chars`);
 };
 
@@ -42,15 +42,16 @@ exports.chooseChar = (msg) => {
   const user = msg.author.id;
   let currentBattle = battles.filter(b => b.place === msg.channel.id);
   currentBattle = currentBattle[0];
-  if (!currentBattle || (currentBattle.firstPlayer !== user && currentBattle.secondPlayer !== user)) {
-    bot.createMessage(msg.channel.id, 'You\'re not in battle!');
-    return;
+  if (!currentBattle && (currentBattle.firstPlayer !== user || currentBattle.secondPlayer !== user)) {
+    return bot.createMessage(msg.channel.id, 'You\'re not in battle!');
   }
   const charName = msg.content.split(' ').slice(1).join(' ');
+  if (!/\S/.test(charName)) {
+    return bot.createMessage(msg.channel.id, 'Char name can\'t be blank!');
+  }
   const userPosition = (currentBattle.firstPlayer === user) ? 'firstPlayer' : 'secondPlayer';
   if (currentBattle[userPosition + 'Char']) {
-    bot.createMessage(msg.channel.id, 'Already choosed!');
-    return;
+    return bot.createMessage(msg.channel.id, 'Already choosed!');
   }
   currentBattle[userPosition + 'Char'] = createChar(charName);
   bot.createMessage(msg.channel.id, `Choosed ${charName}!`);
@@ -85,6 +86,9 @@ exports.useSkill = (msg) => {
   const battleTurn = this.prepareBattle(msg, bot);
   if (!battleTurn) return;
   const skillName = msg.content.split(' ').slice(1).join(' ');
+  if (!/\S/.test(skillName)) {
+    return bot.createMessage(msg.channel.id, 'Skill name can\'t be blank!');
+  }
   const skillAtk = utils.generateRandomInteger(1, 100);
   const dmg = (skillAtk > battleTurn.enemyChar.def) ? skillAtk : Math.round(skillAtk / 2);
   battleTurn.enemyChar.hp -= dmg;
@@ -103,7 +107,7 @@ exports.checkBattleState = (msg, currentBattle) => {
   const winnerUser = (currentBattle.firstPlayerChar.hp <= 0) ? currentBattle.secondPlayer : currentBattle.firstPlayer;
   bot.createMessage(msg.channel.id, `${loserChar} fainted!\n${winnerChar} wins!`);
   bot.createMessage(msg.channel.id, `Congratulations, <@${winnerUser}>!`);
-  battles = battles.filter(b => b !== currentBattle.place);
+  battles = battles.filter(b => b.place !== currentBattle.place);
 };
 
 const createChar = (charName) => {

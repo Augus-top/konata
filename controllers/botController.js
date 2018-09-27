@@ -3,7 +3,6 @@ const battleController = require('./battleController');
 let keys;
 
 if (!process.env['bot_token']) {
-  console.log('ABC');
   keys = require('../keys.json');
 }
 
@@ -37,7 +36,7 @@ bot.on('messageCreate', (msg) => {
 const createCommands = () => {
   commands.push({
     name: 'Ping',
-    condition: (msg) => { return msg.content.startsWith('!ping'); },
+    condition: (msg) => { return msg.content.startsWith('!xping'); },
     action: (msg) => { bot.createMessage(msg.channel.id, 'Pong!'); }
   });
   commands.push({
@@ -47,72 +46,72 @@ const createCommands = () => {
   });
   commands.push({
     name: 'Start Battle',
-    condition: (msg) => { return msg.content.startsWith('!battle'); },
+    condition: (msg) => { return msg.content.startsWith('!xbattle'); },
     action: (msg) => { battleController.startBattle(msg, bot); }
   });
   commands.push({
     name: 'Join Battle',
-    condition: (msg) => { return msg.content.startsWith('!join'); },
+    condition: (msg) => { return msg.content.startsWith('!xjoin'); },
     action: (msg) => { battleController.joinBattle(msg); }
   });
   commands.push({
     name: 'Choose Char',
-    condition: (msg) => { return msg.content.startsWith('!go'); },
+    condition: (msg) => { return msg.content.startsWith('!xgo'); },
     action: (msg) => { battleController.chooseChar(msg); }
   });
   commands.push({
     name: 'Atk during battle',
-    condition: (msg) => { return msg.content.startsWith('!atk'); },
+    condition: (msg) => { return msg.content.startsWith('!xatk'); },
     action: (msg) => { battleController.executeAtk(msg); }
   });
   commands.push({
     name: 'Use skill battle',
-    condition: (msg) => { return msg.content.startsWith('!use'); },
+    condition: (msg) => { return msg.content.startsWith('!xuse'); },
     action: (msg) => { battleController.useSkill(msg); }
   });
   commands.push({
     name: 'Closing Battles',
-    condition: (msg) => { return msg.content.startsWith('!end'); },
+    condition: (msg) => { return msg.content.startsWith('!xend'); },
     action: (msg) => { battleController.endBattles(msg); }
   });
   commands.push({
     name: 'Test battle system',
-    condition: (msg) => { return msg.content.startsWith('!testjoin'); },
+    condition: (msg) => { return msg.content.startsWith('!xtestjoin'); },
     action: (msg) => { testBattle(msg); }
   });
   commands.push({
     name: 'Test go char',
-    condition: (msg) => { return msg.content.startsWith('!testgo'); },
+    condition: (msg) => { return msg.content.startsWith('!xtestgo'); },
     action: (msg) => { testChar(msg); }
   });
   commands.push({
     name: 'Test Atk',
-    condition: (msg) => { return msg.content.startsWith('!testatk'); },
+    condition: (msg) => { return msg.content.startsWith('!xtestatk'); },
     action: (msg) => { testAtk(msg); }
   });
   commands.push({
     name: 'Test skill',
-    condition: (msg) => { return msg.content.startsWith('!testuse'); },
+    condition: (msg) => { return msg.content.startsWith('!xtestuse'); },
     action: (msg) => { testSkill(msg); }
   });
 };
 
 const testBattle = (msg) => {
-  bot.createMessage(msg.channel.id, '!join');
+  bot.createMessage(msg.channel.id, '!xjoin');
 };
 
 const testChar = (msg) => {
   const charName = msg.content.split(' ').slice(1).join(' ');
-  bot.createMessage(msg.channel.id, '!go ' + charName);
+  bot.createMessage(msg.channel.id, '!xgo ' + charName);
 };
 
 const testAtk = (msg) => {
-  bot.createMessage(msg.channel.id, '!atk');
+  bot.createMessage(msg.channel.id, '!xatk');
 };
 
 const testSkill = (msg) => {
   const skillName = msg.content.split(' ').slice(1).join(' ');
-  bot.createMessage(msg.channel.id, '!use ' + skillName);
+  bot.createMessage(msg.channel.id, '!xuse ' + skillName);
 };
 
 const showHelp = (msg) => {
@@ -123,6 +122,7 @@ const showHelp = (msg) => {
   message += '!go + your char name: choose your battle char\n';
   message += '!atk: do a normal atk\n';
   message += '!use + skill name: use a skill to atk\n';
+  message += '!end: stop battles current happening\n';
 
   message += '```';
   bot.createMessage(msg.channel.id, message);
