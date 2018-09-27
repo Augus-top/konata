@@ -117,7 +117,7 @@ const createChar = (charName) => {
   return newChar;
 };
 
-const endBattles = (msg) => {
+exports.endBattles = (msg) => {
   battles = battles.filter(b => b.place !== msg.channel.id);
   bot.createMessage(msg.channel.id, 'Battles ended in this channel');
 };
