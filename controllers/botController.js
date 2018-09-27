@@ -6,7 +6,7 @@ if (!process.env.heroku) {
   keys = require('../keys.json');
 }
 
-const botToken = process.env.botToken || keys.botToken;
+const botToken = process.env.bot_token || keys.bot_token;
 const bot = new Eris(botToken);
 const commands = [];
 

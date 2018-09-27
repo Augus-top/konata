@@ -5,7 +5,7 @@ if (!process.env.heroku) {
   keys = require('../keys.json');
 }
 
-const url = process.env.urlMongo || keys.urlMongo;
+const url = process.env.url_mongo || keys.url_mongo;
 
 // mongoose.connect(url, () => {
 //   console.log('mongodb connected');
