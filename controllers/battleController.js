@@ -1,8 +1,10 @@
 const moment = require('moment');
+const request = require('request');
 
 const utils = require('../utils/utils');
 let battles = [];
 let bot;
+
 
 exports.setBot = (b) => {
   bot = b;
@@ -97,27 +99,35 @@ exports.executeAtk = (msg) => {
   this.checkBattleState(msg, battleTurn.currentBattle);
 };
 
-exports.useSkill = (msg) => {
+exports.useSkill = async (msg) => {
   const battleTurn = this.prepareBattle(msg, bot);
   if (!battleTurn) return;
   const skillName = msg.content.split(' ').slice(1).join(' ');
   if (!/\S/.test(skillName)) {
     return bot.createMessage(msg.channel.id, 'Skill name can\'t be blank!');
   }
+  let skillGif = 'https://cdn.discordapp.com/embed/avatars/0.png'
+  var gif_request = 'api.giphy.com/v1/gifs/search?api_key=mFydloY4ZmutT1TA65SX2cf6Nxe2dKqG&q=' + skillName;
+  request(gif_request, { json: true }, (err, res, body) => {
+    if (err) { return console.log(err); }
+    skillGif = body.data.url;
+    console.log(skillGif)
+  });
+
   const skillAtk = utils.generateRandomInteger(1, 100);
   const dmg = (skillAtk > battleTurn.enemyChar.def) ? skillAtk : Math.round(skillAtk / 2);
   battleTurn.enemyChar.hp -= dmg;
   bot.createMessage(msg.channel.id, {"embed":{
-    "title": battleTurn.userChar.name + ' used '+skillName,
+    "title": battleTurn.userChar.name + ' used ' + skillName,
     "color": 703991,    
     "thumbnail": {
       "url": battleTurn.userChar.image
     },
     "image": {
-      "url": battleTurn.userChar.image
+      "url": skillGif
     },
     "author": {
-      "name": "author name",
+      "name": battleTurn.userChar.name,
       "url": "https://discordapp.com",
       "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
     },
