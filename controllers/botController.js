@@ -22,14 +22,14 @@ bot.on('ready', () => {
   // const before = moment('2018-09-27T08:50:25-03:00');
   // const now = moment();
   // console.log(before.diff(now, 'minutes'));
-  // const msg = {};
-  // msg.content = commandSymbol + 'battle';
-  // msg.author = {};
-  // msg.channel = {};
-  // msg.channel.id = '374042711939874816';
-  // msg.author.id = '94937291998375936';
-  // const command = commands.filter(c => c.condition(msg));
-  // if (command[0]) command[0].action(msg);
+  const msg = {};
+  msg.content = commandSymbol + 'battle';
+  msg.author = {};
+  msg.channel = {};
+  msg.channel.id = '374042711939874816';
+  msg.author.id = '94937291998375936';
+  const command = commands.filter(c => c.condition(msg));
+  if (command[0]) command[0].action(msg);
 });
 
 bot.on('messageCreate', (msg) => {
