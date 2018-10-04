@@ -75,11 +75,8 @@ exports.setCharImage = (msg) => {
 };
 
 exports.updateBattleChar = async (msg, currentBattle, user, charName, userPosition) => {
-  let char = await mongoController.getChar(charName);
-  if (char === undefined) {
-    char = createChar(charName);
-    mongoController.saveChar(char, user);
-  }
+  const char = await getChar(charName, user, msg);
+  if (char === undefined) return;
   currentBattle[userPosition + 'Char'] = char;
   bot.createMessage(msg.channel.id, `Choosed ${charName}!`);
   if (currentBattle.firstPlayerChar && currentBattle.secondPlayerChar) {
@@ -150,6 +147,25 @@ const createChar = (charName) => {
     image: 'https://vignette.wikia.nocookie.net/ultimate-pokemon-fanon/images/8/85/Missingno_drawing_by_aerostat-d4krmly.jpg/revision/latest?cb=20130916223342'
   };
   return newChar;
+};
+
+const getChar = async (charName, user, msg) => {
+  const chars = await mongoController.getChar(charName, user);
+  if (chars !== undefined) {
+    console.log(chars);
+    const userChar = chars.filter(c => c.owner.discord_id === user);
+    console.log(userChar);
+    if (userChar.length > 0) return userChar[0];
+  }
+  console.log('Criando char');
+  let char = createChar(charName);
+  char = await mongoController.saveChar(char, user);
+  if (char === undefined) return;
+  if (char === 'already exists') {
+    bot.createMessage(msg.channel.id, `You already have a char named ${charName}!`);
+    return;
+  }
+  return char;
 };
 
 const prepareEmbed = (battleTurn, skillName, dmg) => {

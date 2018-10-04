@@ -28,12 +28,12 @@ exports.createSchema = async (Schema, info) => {
 };
 
 exports.updateSchema = async (Schema, id, modifications) => {
-  const updatedModel = await Schema.update({ _id: id }, modifications);
+  const updatedModel = await Schema.updateOne({ _id: id }, modifications);
   return updatedModel;
 };
 
 exports.updateSchemaByProperty = async (Schema, propertyName, propertyValue, modifications) => {
-  const updatedModel = await Schema.update({ propertyName: propertyValue }, modifications);
+  const updatedModel = await Schema.updateMany({ propertyName: propertyValue }, modifications);
   return updatedModel;
 };
 
@@ -54,17 +54,21 @@ exports.registerPlayer = async (playerId) => {
   return resultCreate;
 };
 
-exports.getChar = async (name) => {
-  const result = await this.getSchemaByProperty(Char, 'name', name);
-  if (result.length === 0) return undefined;
+exports.getChar = async (name, playerId) => {
+  const result = await Char.find({ name }).populate('owner').lean();
+  if (result.length === 0) return;
   return result;
 };
 
 exports.saveChar = async (char, playerId) => {
+  const player = await Player.find({ discord_id: playerId }).populate('chars').lean();
+  if (player.length === 0) return;
+  const existingChar = player[0].chars.filter(c => c.name === char.name);
+  if (existingChar.length > 0) return 'already exists';
+  char.owner = player[0]._id;
   const newChar = await this.createSchema(Char, char);
-  const player = await this.getSchemaByProperty(Player, 'discord_id', playerId);
-  if (newChar === undefined || player.length === 0) return;
+  if (newChar === undefined) return;
   player[0].chars.push(newChar._id);
   const resultUpdate = await this.updateSchema(Player, player[0]._id, player[0]);
-  return resultUpdate;
+  return newChar;
 };
