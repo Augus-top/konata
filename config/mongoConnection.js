@@ -7,9 +7,9 @@ if (!process.env['url_mongo']) {
 
 const url = process.env['url_mongo'] || keys.url_mongo;
 
-// mongoose.connect(url, () => {
-//   console.log('mongodb connected');
-// });
+mongoose.connect(url, () => {
+  console.log('mongodb connected');
+});
 
 module.exports = mongoose;
 

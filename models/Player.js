@@ -9,6 +9,6 @@ const PlayerSchema = {
   chars: [{ type: Schema.Types.ObjectId, ref: 'Char' }]
 };
 
-const Player = mongoose.model('Char', PlayerSchema);
+const Player = mongoose.model('Player', PlayerSchema);
 
 module.exports = Player;

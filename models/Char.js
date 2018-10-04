@@ -11,7 +11,8 @@ const CharSchema = {
   evasion: Number,
   level: Number,
   status: String,
-  skills: [{ type: Schema.Types.ObjectId, ref: 'Skill' }]
+  skills: [{ type: Schema.Types.ObjectId, ref: 'Skill' }],
+  owner: { type: Schema.Types.ObjectId, ref: 'Player' }
 };
 
 const Char = mongoose.model('Char', CharSchema);
