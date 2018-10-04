@@ -125,8 +125,14 @@ exports.useSkill = async (msg) => {
       activeSkill(skillGif, battleTurn, skillName, msg);
       return console.log(err); 
     }
-    skillGif = body.data[0].images.original.url;
-    activeSkill(skillGif, battleTurn, skillName, msg);
+    if(body.data.lenght<=0)
+    {
+      activeSkill(skillGif, battleTurn, skillName, msg);
+    }
+    else{
+      skillGif = body.data[utils.generateRandomInteger(0, body.data.length-1)].images.original.url;
+      activeSkill(skillGif, battleTurn, skillName, msg);
+    }    
   });  
 };
 

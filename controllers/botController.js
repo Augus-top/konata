@@ -9,7 +9,7 @@ if (!process.env['bot_token']) {
 const botToken = process.env['bot_token'] || keys.bot_token;
 const bot = new Eris(botToken);
 const commands = [];
-let commandSymbol = '!x';
+let commandSymbol = '+';
 
 exports.connectBot = () => {
   bot.connect();
