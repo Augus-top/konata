@@ -1,6 +1,8 @@
 const moment = require('moment');
 
 const utils = require('../utils/utils');
+const mongoController = require('./mongoController');
+
 let battles = [];
 let bot;
 
@@ -18,6 +20,7 @@ exports.startBattle = (msg) => {
     place: msg.channel.id,
     lastActionTime: moment().format() + ''
   };
+  mongoController.registerPlayer(msg.author.id);
   battles.push(newBattle);
   bot.createMessage(msg.channel.id, 'Waiting for challenger');
 };
@@ -27,10 +30,14 @@ exports.joinBattle = (msg) => {
   if (!currentBattle[0]) {
     return bot.createMessage(msg.channel.id, 'No battles current in this channel');
   }
+  if (currentBattle[0].firstPlayer === msg.author.id) {
+    return bot.createMessage(msg.channel.id, 'You can\'t fight against yourself!');
+  }
   if (currentBattle[0].firstPlayer && currentBattle[0].secondPlayer) {
     return bot.createMessage(msg.channel.id, 'Battle already has two players');
   }
   currentBattle[0].secondPlayer = msg.author.id;
+  mongoController.registerPlayer(msg.author.id);
   currentBattle[0].lastActionTime = moment().format() + '';
   bot.createMessage(msg.channel.id, `Starting battle between <@${currentBattle[0].firstPlayer}> and <@${currentBattle[0].secondPlayer}>!\nChoose your chars`);
 };
@@ -50,7 +57,7 @@ exports.chooseChar = (msg) => {
   if (currentBattle[userPosition + 'Char']) {
     return bot.createMessage(msg.channel.id, 'Already choosed!');
   }
-  this.updateBattleChar(msg, currentBattle, charName, userPosition);
+  this.updateBattleChar(msg, currentBattle, user, charName, userPosition);
 };
 
 exports.setCharImage = (msg) => {
@@ -67,8 +74,13 @@ exports.setCharImage = (msg) => {
   userChar.image = charImage;
 };
 
-exports.updateBattleChar = (msg, currentBattle, charName, userPosition) => {
-  currentBattle[userPosition + 'Char'] = createChar(charName);
+exports.updateBattleChar = async (msg, currentBattle, user, charName, userPosition) => {
+  let char = await mongoController.getChar(charName);
+  if (char === undefined) {
+    char = createChar(charName);
+    mongoController.saveChar(char, user);
+  }
+  currentBattle[userPosition + 'Char'] = char;
   bot.createMessage(msg.channel.id, `Choosed ${charName}!`);
   if (currentBattle.firstPlayerChar && currentBattle.secondPlayerChar) {
     bot.createMessage(msg.channel.id, `Battle Started!\n<@${currentBattle.firstPlayer}>, choose your move!`);
@@ -107,28 +119,7 @@ exports.useSkill = (msg) => {
   const skillAtk = utils.generateRandomInteger(1, 100);
   const dmg = (skillAtk > battleTurn.enemyChar.def) ? skillAtk : Math.round(skillAtk / 2);
   battleTurn.enemyChar.hp -= dmg;
-  bot.createMessage(msg.channel.id, {"embed":{
-    "title": battleTurn.userChar.name + ' used '+skillName,
-    "color": 703991,    
-    "thumbnail": {
-      "url": battleTurn.userChar.image
-    },
-    "image": {
-      "url": battleTurn.userChar.image
-    },
-    "author": {
-      "name": "author name",
-      "url": "https://discordapp.com",
-      "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
-    },
-    "fields": [
-      {
-        "name": "🤔",
-        "value": battleTurn.enemyChar.name + ' suffered '+dmg+' points of damage'
-      }
-    ]
-  }});
-  //bot.createMessage(msg.channel.id, `${battleTurn.userChar.name} used ${skillName}!\n${battleTurn.enemyChar.name} suffered ${dmg} points of damage!`);
+  bot.createMessage(msg.channel.id, prepareEmbed(battleTurn, skillName, dmg));
   this.checkBattleState(msg, battleTurn.currentBattle);
 };
 
@@ -153,9 +144,37 @@ const createChar = (charName) => {
     atk: utils.generateRandomInteger(20, 100),
     def: utils.generateRandomInteger(20, 99),
     speed: utils.generateRandomInteger(1, 100),
+    evasion: utils.generateRandomInteger(1, 100),
+    level: 1,
+    status: 'none',
     image: 'https://vignette.wikia.nocookie.net/ultimate-pokemon-fanon/images/8/85/Missingno_drawing_by_aerostat-d4krmly.jpg/revision/latest?cb=20130916223342'
   };
   return newChar;
+};
+
+const prepareEmbed = (battleTurn, skillName, dmg) => {
+  const embed = { embed: {
+    title: battleTurn.userChar.name + ' used ' + skillName,
+    color: 703991,
+    thumbnail: {
+      url: battleTurn.userChar.image
+    },
+    image: {
+      url: battleTurn.userChar.image
+    },
+    author: {
+      name: battleTurn.userChar.name,
+      url: 'https://discordapp.com',
+      icon_url: 'https://cdn.discordapp.com/embed/avatars/0.png'
+    },
+    fields: [
+      {
+        name: '🤔',
+        value: battleTurn.enemyChar.name + ' suffered ' + dmg + ' points of damage'
+      }
+    ]
+  } };
+  return embed;
 };
 
 
