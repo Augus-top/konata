@@ -1,13 +1,15 @@
 const mongoose = require('../config/mongoConnection');
+const autopopulate = require('mongoose-autopopulate');
 const Schema = mongoose.Schema;
 
-const PlayerSchema = {
+const PlayerSchema = new Schema({
   discord_id: String,
-  wins: String,
+  wins: Number,
   loses: Number,
   level: Number,
-  chars: [{ type: Schema.Types.ObjectId, ref: 'Char' }]
-};
+  chars: [{ type: Schema.Types.ObjectId, ref: 'Char', autopopulate: { maxDepth: 1 } }]
+});
+PlayerSchema.plugin(autopopulate);
 
 const Player = mongoose.model('Player', PlayerSchema);
 

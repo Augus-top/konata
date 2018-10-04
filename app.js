@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 
 const db = require('./config/mongoConnection');
 const index = require('./routes/index');
+const player = require('./routes/player');
+const char = require('./routes/char');
 const botController = require('./controllers/botController');
 
 const app = express();
@@ -18,6 +20,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
+app.use('/api/player', player);
+app.use('/api/char', char);
 
 app.use((req, res) => {
   res.status(404).send({ url: `${req.originalUrl} not found` });

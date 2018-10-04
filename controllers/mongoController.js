@@ -3,19 +3,19 @@ const Char = require('../models/Char');
 const Skill = require('../models/Skill');
 
 exports.getSchema = async (Schema) => {
-  const result = await Schema.find().lean();
+  const result = await Schema.find();
   return result;
 };
 
 exports.getSchemaById = async (Schema, id) => {
-  const result = await Schema.findById(id).lean();
+  const result = await Schema.findById(id);
   return result;
 };
 
 exports.getSchemaByProperty = async (Schema, propertyName, propertyValue) => {
   const query = {};
   query[propertyName] = propertyValue;
-  const result = await Schema.find(query).lean();
+  const result = await Schema.find(query);
   return result;
 };
 
@@ -54,14 +54,20 @@ exports.registerPlayer = async (playerId) => {
   return resultCreate;
 };
 
-exports.getChar = async (name, playerId) => {
-  const result = await Char.find({ name }).populate('owner').lean();
+exports.getChar = async (name) => {
+  const result = await Char.find({ name });
+  if (result.length === 0) return;
+  return result;
+};
+
+exports.getSkill = async (name) => {
+  const result = await Skill.find({ name });
   if (result.length === 0) return;
   return result;
 };
 
 exports.saveChar = async (char, playerId) => {
-  const player = await Player.find({ discord_id: playerId }).populate('chars').lean();
+  const player = await Player.find({ discord_id: playerId });
   if (player.length === 0) return;
   const existingChar = player[0].chars.filter(c => c.name === char.name);
   if (existingChar.length > 0) return 'already exists';

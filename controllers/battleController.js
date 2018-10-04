@@ -75,7 +75,7 @@ exports.setCharImage = (msg) => {
 };
 
 exports.updateBattleChar = async (msg, currentBattle, user, charName, userPosition) => {
-  const char = await getChar(charName, user, msg);
+  const char = await prepareChar(charName, user, msg);
   if (char === undefined) return;
   currentBattle[userPosition + 'Char'] = char;
   bot.createMessage(msg.channel.id, `Choosed ${charName}!`);
@@ -106,13 +106,14 @@ exports.executeAtk = (msg) => {
   this.checkBattleState(msg, battleTurn.currentBattle);
 };
 
-exports.useSkill = (msg) => {
+exports.useSkill = async (msg) => {
   const battleTurn = this.prepareBattle(msg, bot);
   if (!battleTurn) return;
   const skillName = msg.content.split(' ').slice(1).join(' ');
   if (!/\S/.test(skillName)) {
     return bot.createMessage(msg.channel.id, 'Skill name can\'t be blank!');
   }
+  const skill = await prepareSkill(skillName, battleTurn, msg.author.id);
   const skillAtk = utils.generateRandomInteger(1, 100);
   const dmg = (skillAtk > battleTurn.enemyChar.def) ? skillAtk : Math.round(skillAtk / 2);
   battleTurn.enemyChar.hp -= dmg;
@@ -149,15 +150,12 @@ const createChar = (charName) => {
   return newChar;
 };
 
-const getChar = async (charName, user, msg) => {
+const prepareChar = async (charName, user, msg) => {
   const chars = await mongoController.getChar(charName, user);
   if (chars !== undefined) {
-    console.log(chars);
     const userChar = chars.filter(c => c.owner.discord_id === user);
-    console.log(userChar);
     if (userChar.length > 0) return userChar[0];
   }
-  console.log('Criando char');
   let char = createChar(charName);
   char = await mongoController.saveChar(char, user);
   if (char === undefined) return;
@@ -166,6 +164,10 @@ const getChar = async (charName, user, msg) => {
     return;
   }
   return char;
+};
+
+const prepareSkill = async (skillName, battleState,user) => {
+  const skills = await mongoController.getSkill(skillName);
 };
 
 const prepareEmbed = (battleTurn, skillName, dmg) => {
