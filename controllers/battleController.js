@@ -119,18 +119,15 @@ exports.useSkill = async (msg) => {
     return bot.createMessage(msg.channel.id, 'Skill name can\'t be blank!');
   }
   let skillGif = 'https://cdn.discordapp.com/embed/avatars/0.png'
-  var gif_request = 'api.giphy.com/v1/gifs/search?api_key=mFydloY4ZmutT1TA65SX2cf6Nxe2dKqG&q=' + skillName;
+  var gif_request = 'http://api.giphy.com/v1/gifs/search?api_key=mFydloY4ZmutT1TA65SX2cf6Nxe2dKqG&q=' + skillName;
   request(gif_request, { json: true }, (err, res, body) => {
-    if (err) { return console.log(err); }
-    skillGif = body.data.url;
-    console.log(skillGif)
-  });
-
-  const skillAtk = utils.generateRandomInteger(1, 100);
-  const dmg = (skillAtk > battleTurn.enemyChar.def) ? skillAtk : Math.round(skillAtk / 2);
-  battleTurn.enemyChar.hp -= dmg;
-  bot.createMessage(msg.channel.id, prepareEmbed(battleTurn, skillName, dmg));
-  this.checkBattleState(msg, battleTurn.currentBattle);
+    if (err) { 
+      activeSkill(skillGif, battleTurn, skillName, msg);
+      return console.log(err); 
+    }
+    skillGif = body.data[0].images.original.url;
+    activeSkill(skillGif, battleTurn, skillName, msg);
+  });  
 };
 
 exports.checkBattleState = (msg, currentBattle) => {
@@ -162,30 +159,37 @@ const createChar = (charName) => {
   return newChar;
 };
 
-const prepareEmbed = (battleTurn, skillName, dmg) => {
-  const embed = { embed: {
-    title: battleTurn.userChar.name + ' used ' + skillName,
-    color: 703991,
-    thumbnail: {
-      url: battleTurn.userChar.image
+const prepareEmbed = (battleTurn,skillGif, skillName, dmg) => {
+  const embed = {"embed":{
+    "title": battleTurn.userChar.name + ' used ' + skillName,
+    "color": 703991,    
+    "thumbnail": {
+      "url": battleTurn.userChar.image
     },
-    image: {
-      url: battleTurn.userChar.image
+    "image": {
+      "url": skillGif
     },
-    author: {
-      name: battleTurn.userChar.name,
-      url: 'https://discordapp.com',
-      icon_url: 'https://cdn.discordapp.com/embed/avatars/0.png'
+    "author": {
+      "name": battleTurn.userChar.name,
+      "url": "https://discordapp.com",
+      "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
     },
-    fields: [
+    "fields": [
       {
-        name: '🤔',
-        value: battleTurn.enemyChar.name + ' suffered ' + dmg + ' points of damage'
+        "name": "🤔",
+        "value": battleTurn.enemyChar.name + ' suffered '+dmg+' points of damage'
       }
     ]
-  } };
+  }};
   return embed;
 };
+const activeSkill = (skillGif, battleTurn, skillName, msg) => {
+  const skillAtk = utils.generateRandomInteger(1, 100);
+  const dmg = (skillAtk > battleTurn.enemyChar.def) ? skillAtk : Math.round(skillAtk / 2);
+  battleTurn.enemyChar.hp -= dmg;
+  bot.createMessage(msg.channel.id, prepareEmbed(battleTurn, skillGif, skillName, dmg));
+  this.checkBattleState(msg, battleTurn.currentBattle);
+}
 
 
 exports.endBattles = (msg) => {
