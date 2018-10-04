@@ -29,6 +29,7 @@
     "moment-timezone": "^0.5.13",
     "mongodb": "^2.2.33",
     "mongoose": "^5.0.6",
+    "request": "^2.88.0",
     "mongoose-autopopulate": "^0.8.1"
   },
   "devDependencies": {

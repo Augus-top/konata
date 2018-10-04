@@ -74,6 +74,11 @@ const createCommands = () => {
     action: (msg) => { battleController.executeAtk(msg); }
   });
   commands.push({
+    name: 'Use Skill during battle',
+    condition: (msg) => { return msg.content.startsWith(commandSymbol + 'use'); },
+    action: (msg) => { battleController.useSkill(msg); }
+  });
+  commands.push({
     name: 'Change command symbol',
     condition: (msg) => { return msg.content.startsWith(commandSymbol + 'changeSymbol'); },
     action: (msg) => { changeSymbol(msg); }
