@@ -1,6 +1,7 @@
 const moment = require('moment');
 const request = require('request');
-
+const jimp = require('jimp');
+const fs = require('fs');
 const utils = require('../utils/utils');
 const mongoController = require('./mongoController');
 
@@ -42,6 +43,23 @@ exports.joinBattle = (msg) => {
   mongoController.registerPlayer(msg.author.id);
   currentBattle[0].lastActionTime = moment().format() + '';
   bot.createMessage(msg.channel.id, `Starting battle between <@${currentBattle[0].firstPlayer}> and <@${currentBattle[0].secondPlayer}>!\nChoose your chars`);
+};
+
+exports.viewChar = (msg) => {
+  const currentBattle = battles.filter(b => b.place === msg.channel.id);
+  const charName = msg.content.split(' ').slice(1).join(' ');
+  console.log(charName + 'char');
+  
+  jimp.read('https://blizzardwatch.com/wp-content/uploads/2016/11/OW_Sombra_cinematic_header.jpg').then(image => {
+    image.cover(200,350);
+    let fileo = 'char.' + image.getExtension(); // with no extension
+    image.write(fileo, () => {
+      bot.createMessage(msg.channel.id,'',{file: fs.readFileSync(fileo), name: fileo});
+    });
+  })
+  .catch(err => {
+    // handle an exception
+  });
 };
 
 exports.chooseChar = (msg) => {

@@ -9,7 +9,7 @@ if (!process.env['bot_token']) {
 const botToken = process.env['bot_token'] || keys.bot_token;
 const bot = new Eris(botToken);
 const commands = [];
-let commandSymbol = '#';
+let commandSymbol = '-';
 
 exports.connectBot = () => {
   bot.connect();
@@ -52,6 +52,11 @@ const createCommands = () => {
     name: 'Start Battle',
     condition: (msg) => { return msg.content.startsWith(commandSymbol + 'battle'); },
     action: (msg) => { battleController.startBattle(msg, bot); }
+  });
+  commands.push({
+    name: 'View Char',
+    condition: (msg) => { return msg.content.startsWith(commandSymbol + 'char'); },
+    action: (msg) => { battleController.viewChar(msg); }
   });
   commands.push({
     name: 'Join Battle',
