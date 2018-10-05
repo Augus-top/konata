@@ -78,3 +78,16 @@ exports.saveChar = async (char, playerId) => {
   const resultUpdate = await this.updateSchema(Player, player[0]._id, player[0]);
   return newChar;
 };
+
+exports.saveSkill = async (skill, charName) => {
+  const char = await Char.find({ name: charName });
+  if (char.length === 0) return;
+  const existingSkill = char[0].skills.filter(s => s.name === skill.name);
+  if (existingSkill.length > 0) return 'already exists';
+  skill.owner = char[0]._id;
+  const newSkill = await this.createSchema(Skill, skill);
+  if (newSkill === undefined) return;
+  char[0].skills.push(newSkill._id);
+  const resultUpdate = await this.updateSchema(Char, char[0]._id, char[0]);
+  return newSkill;
+};

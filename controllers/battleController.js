@@ -1,7 +1,7 @@
 const moment = require('moment');
-const request = require('request');
 const jimp = require('jimp');
 const fs = require('fs');
+const request = require('request-promise');
 const utils = require('../utils/utils');
 const mongoController = require('./mongoController');
 
@@ -77,6 +77,7 @@ exports.chooseChar = (msg) => {
   if (currentBattle[userPosition + 'Char']) {
     return bot.createMessage(msg.channel.id, 'Already choosed!');
   }
+  if (currentBattle.secondPlayer === undefined) currentBattle.secondPlayer = msg.author.id;
   this.updateBattleChar(msg, currentBattle, user, charName, userPosition);
 };
 
@@ -133,14 +134,11 @@ exports.useSkill = async (msg) => {
   if (!/\S/.test(skillName)) {
     return bot.createMessage(msg.channel.id, 'Skill name can\'t be blank!');
   }
-
   const skill = await prepareSkill(skillName, battleTurn, msg.author.id, msg);
-  // const skillAtk = utils.generateRandomInteger(1, 100);
-  // const dmg = (skillAtk > battleTurn.enemyChar.def) ? skillAtk : Math.round(skillAtk / 2);
-  // battleTurn.enemyChar.hp -= dmg;
-  // bot.createMessage(msg.channel.id, prepareEmbed(battleTurn, skillName, dmg));
-  // this.checkBattleState(msg, battleTurn.currentBattle);
-
+  const dmg = (skill.atk > battleTurn.enemyChar.def) ? skill.atk : Math.round(skill.atk / 2);
+  battleTurn.enemyChar.hp -= dmg;
+  bot.createMessage(msg.channel.id, prepareEmbed(battleTurn, skill, dmg));
+  this.checkBattleState(msg, battleTurn.currentBattle);
 };
 
 exports.checkBattleState = (msg, currentBattle) => {
@@ -172,8 +170,20 @@ const createChar = (charName) => {
   return newChar;
 };
 
+const createSkill = (skillName, skillGif) => {
+  const newSkill = {
+    name: skillName,
+    atk: utils.generateRandomInteger(30, 100),
+    effect: 'none',
+    accuracy: utils.generateRandomInteger(50, 100),
+    cooldown: utils.generateRandomInteger(2, 5),
+    image: skillGif
+  };
+  return newSkill;
+};
+
 const prepareChar = async (charName, user, msg) => {
-  const chars = await mongoController.getChar(charName, user);
+  const chars = await mongoController.getChar(charName);
   if (chars !== undefined) {
     const userChar = chars.filter(c => c.owner.discord_id === user);
     if (userChar.length > 0) return userChar[0];
@@ -190,26 +200,38 @@ const prepareChar = async (charName, user, msg) => {
 
 const prepareSkill = async (skillName, battleTurn, user, msg) => {
   const skills = await mongoController.getSkill(skillName);
-
-  let skillGif = 'https://cdn.discordapp.com/embed/avatars/0.png'
-  var gif_request = 'http://api.giphy.com/v1/gifs/search?api_key=mFydloY4ZmutT1TA65SX2cf6Nxe2dKqG&q=' + skillName;
-  request(gif_request, { json: true }, (err, res, body) => {
-    if(body.data.length>0)  {
-      skillGif = body.data[utils.generateRandomInteger(0, body.data.length-1)].images.original.url;
-    }
-    activeSkill(skillGif, battleTurn, skillName, msg);
-  });
+  if (skills !== undefined) {
+    const userSkill = skills.filter(s => (s.owner._id + '') === (battleTurn.userChar._id + ''));
+    if (userSkill.length > 0) return userSkill[0];
+  }
+  const skillGif = await generateGif(skillName);
+  let skill = createSkill(skillName, skillGif);
+  skill = await mongoController.saveSkill(skill, battleTurn.userChar.name);
+  if (skill === undefined) return;
+  if (skill === 'already exists') {
+    bot.createMessage(msg.channel.id, `You already have a skill named ${skillName}!`);
+    return;
+  }
+  return skill;
 };
 
-const prepareEmbed = (battleTurn, skillGif, skillName, dmg) => {
+const generateGif = async (skillName) => {
+  let skillGif = 'https://cdn.discordapp.com/embed/avatars/0.png'
+  const gif_request = 'http://api.giphy.com/v1/gifs/search?api_key=mFydloY4ZmutT1TA65SX2cf6Nxe2dKqG&q=' + skillName;
+  const resp = await request(gif_request, { json: true });
+  if (resp.data.length > 0) skillGif = resp.data[utils.generateRandomInteger(0, resp.data.length - 1)].images.original.url;
+  return skillGif;
+};
+
+const prepareEmbed = (battleTurn, skill, dmg) => {
   const embed = { embed: {
-    title: battleTurn.userChar.name + ' used ' + skillName,
+    title: battleTurn.userChar.name + ' used ' + skill.name,
     color: 703991,
     thumbnail: {
       url: battleTurn.userChar.image
     },
     "image": {
-      "url": skillGif
+      "url": skill.image
     },
     "author": {
       "name": battleTurn.userChar.name,
@@ -219,20 +241,12 @@ const prepareEmbed = (battleTurn, skillGif, skillName, dmg) => {
     "fields": [
       {
         "name": "🤔",
-        "value": battleTurn.enemyChar.name + ' suffered '+dmg+' points of damage'
+        "value": battleTurn.enemyChar.name + ' suffered '+ dmg +' points of damage'
       }
     ]
   }};
   return embed;
 };
-const activeSkill = (skillGif, battleTurn, skillName, msg) => {
-  const skillAtk = utils.generateRandomInteger(1, 100);
-  const dmg = (skillAtk > battleTurn.enemyChar.def) ? skillAtk : Math.round(skillAtk / 2);
-  battleTurn.enemyChar.hp -= dmg;
-  bot.createMessage(msg.channel.id, prepareEmbed(battleTurn, skillGif, skillName, dmg));
-  this.checkBattleState(msg, battleTurn.currentBattle);
-}
-
 
 exports.endBattles = (msg) => {
   battles = battles.filter(b => b.place !== msg.channel.id);
