@@ -22,6 +22,8 @@ bot.on('ready', () => {
   // const before = moment('2018-09-27T08:50:25-03:00');
   // const now = moment();
   // console.log(before.diff(now, 'minutes'));
+  
+  bot.editStatus("invisible", {name:"O JOGO", type:2});
   const msg = {};
   msg.content = commandSymbol + 'battle';
   msg.author = {};
