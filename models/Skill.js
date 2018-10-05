@@ -4,10 +4,11 @@ const Schema = mongoose.Schema;
 
 const SkillSchema = new Schema({
   name: String,
-  atk_multiplier: Number,
+  atk: Number,
   effect: String,
   accuracy: Number,
   cooldown: Number,
+  image: String,
   owner: { type: Schema.Types.ObjectId, ref: 'Char', autopopulate: { maxDepth: 1 } }
 });
 SkillSchema.plugin(autopopulate);
