@@ -9,7 +9,7 @@ if (!process.env['bot_token']) {
 const botToken = process.env['bot_token'] || keys.bot_token;
 const bot = new Eris(botToken);
 const commands = [];
-let commandSymbol = '#';
+let commandSymbol = '+';
 
 exports.connectBot = () => {
   bot.connect();
@@ -23,7 +23,7 @@ bot.on('ready', () => {
   // const now = moment();
   // console.log(before.diff(now, 'minutes'));
   
-  bot.editStatus("invisible", {name:"O JOGO", type:2});
+  bot.editStatus("away", {name:"LoTR", type:3});
   // const msg = {};
   // msg.content = commandSymbol + 'battle';
   // msg.author = {};

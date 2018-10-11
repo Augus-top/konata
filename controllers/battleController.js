@@ -7,9 +7,13 @@ const mongoController = require('./mongoController');
 
 let battles = [];
 let bot;
-
-exports.setBot = (b) => {
+let font;
+exports.setBot = async (b) => {
   bot = b;
+  
+  font = await jimp.loadFont(jimp.FONT_SANS_32_BLACK);    
+  
+  
 };
 
 exports.startBattle = (msg) => {
@@ -169,11 +173,20 @@ exports.showCharList = async (msg) => {
   const player = await mongoController.getPlayer(user);
   if (player === undefined) return bot.createMessage(msg.channel.id, `You don't have any chars, <@${msg.author.id}>!`);
   let message = '';
-  player[0].chars.forEach(c => {
-    console.log(c.name);
-    message += c.name + '\n';
+  player[0].chars.forEach(c => {    
+    jimp.read(c.image).then(image => {
+      image.cover(200,75);
+      image.print(font, 25, 20, c.name);
+      let fileo = player[0].discord_id + c._id + '.' + image.getExtension(); // with no extension
+      
+      image.write(fileo, () => {
+        bot.createMessage(msg.channel.id,'',{file: fs.readFileSync(fileo), name: fileo});
+      });
+    })
+    .catch(err => {
+      // handle an exception
+    });
   });
-  bot.createMessage(msg.channel.id, "" + message);
 };
 
 const createChar = (charName) => {
