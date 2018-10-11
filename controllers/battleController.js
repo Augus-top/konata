@@ -80,18 +80,23 @@ exports.chooseChar = (msg) => {
   this.updateBattleChar(msg, currentBattle, user, charName, userPosition);
 };
 
-exports.setCharImage = (msg) => {
+exports.setCharImage = async (msg) => {
   const user = msg.author.id;
-  let currentBattle = battles.filter(b => b.place === msg.channel.id);
-
-  currentBattle = currentBattle[0];
-  if (!currentBattle && (currentBattle.firstPlayer !== user || currentBattle.secondPlayer !== user)) {
-    return bot.createMessage(msg.channel.id, 'You\'re not in battle!');
-  }
-  const charImage = msg.content.split(' ').slice(1).join(' ');
+  const params = msg.content.split(' ').slice(1).join(' ').split('http');
+  if (params.length < 2) return;
+  const charName = params[0].split(' ').slice(0, 1).join(' ');
+  const link = 'http' + params[1];
+  const chars = await mongoController.getChar(charName);
+  if (chars === undefined) return bot.createMessage(msg.channel.id, `There's no char named **${charName}**!`);
+  const char = chars.filter(c => c.owner.discord_id === msg.author.id);
+  if (char.length === 0) return bot.createMessage(msg.channel.id, `You don't have any char named **${charName}**, <@${msg.author.id}>!`);
+  char[0].image = link;
+  char[0].save();
+  bot.createMessage(msg.channel.id, `${charName}'s image was updated!`);
+  // const charImage = msg.content.split(' ').slice(1).join(' ');
   
-  const userChar = (user === currentBattle.firstPlayer) ? currentBattle.firstPlayerChar : currentBattle.secondPlayerChar;
-  userChar.image = charImage;
+  // const userChar = (user === currentBattle.firstPlayer) ? currentBattle.firstPlayerChar : currentBattle.secondPlayerChar;
+  // userChar.image = charImage;
 };
 
 exports.updateBattleChar = async (msg, currentBattle, user, charName, userPosition) => {
@@ -158,7 +163,6 @@ exports.showChar = async (msg) => {
   const charName = msg.content.split(' ').slice(1).join(' ');
   const chars = await mongoController.getChar(charName);
   if (chars === undefined) return bot.createMessage(msg.channel.id, `There's no char named **${charName}**!`);
-  console.log(chars);
   const char = chars.filter(c => c.owner.discord_id === msg.author.id);
   if (char.length === 0) return bot.createMessage(msg.channel.id, `You don't have any char named **${charName}**, <@${msg.author.id}>!`);
   bot.createMessage(msg.channel.id, "" + char);

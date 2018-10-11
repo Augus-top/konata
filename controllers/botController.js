@@ -9,7 +9,7 @@ if (!process.env['bot_token']) {
 const botToken = process.env['bot_token'] || keys.bot_token;
 const bot = new Eris(botToken);
 const commands = [];
-let commandSymbol = '#';
+let commandSymbol = '!';
 
 exports.connectBot = () => {
   bot.connect();
@@ -23,15 +23,15 @@ bot.on('ready', () => {
   // const now = moment();
   // console.log(before.diff(now, 'minutes'));
   
-  bot.editStatus("invisible", {name:"O JOGO", type:2});
-  // const msg = {};
-  // msg.content = commandSymbol + 'battle';
-  // msg.author = {};
-  // msg.channel = {};
-  // msg.channel.id = '374042711939874816';
-  // msg.author.id = '94937291998375936';
-  // const command = commands.filter(c => c.condition(msg));
-  // if (command[0]) command[0].action(msg);
+  bot.editStatus("away", {name:"O JOGO", type:2});
+  const msg = {};
+  msg.content = commandSymbol + 'setImage Satan https://emtstatic.com/2013/03/papamaradona.jpg';
+  msg.author = {};
+  msg.channel = {};
+  msg.channel.id = '374042711939874816';
+  msg.author.id = '94937291998375936';
+  const command = commands.filter(c => c.condition(msg));
+  if (command[0]) command[0].action(msg);
 });
 
 bot.on('messageCreate', (msg) => {
