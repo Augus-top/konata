@@ -31,12 +31,8 @@
     "mongodb": "^2.2.33",
     "mongoose": "^5.0.6",
     "mongoose-autopopulate": "^0.8.1",
-<<<<<<< HEAD
-    "request": "^2.88.0"
-=======
     "request": "^2.88.0",
     "request-promise": "^4.2.2"
->>>>>>> f088eeaeba41ade38ca3bd41fa8ef08c9644159d
   },
   "devDependencies": {
     "eslint": "^4.17.0",

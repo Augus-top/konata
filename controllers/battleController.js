@@ -8,7 +8,6 @@ const mongoController = require('./mongoController');
 let battles = [];
 let bot;
 
-
 exports.setBot = (b) => {
   bot = b;
 };
@@ -153,6 +152,28 @@ exports.checkBattleState = (msg, currentBattle) => {
   bot.createMessage(msg.channel.id, `${loserChar} fainted!\n${winnerChar} wins!`);
   bot.createMessage(msg.channel.id, `Congratulations, <@${winnerUser}>!`);
   battles = battles.filter(b => b.place !== currentBattle.place);
+};
+
+exports.showChar = async (msg) => {
+  const charName = msg.content.split(' ').slice(1).join(' ');
+  const chars = await mongoController.getChar(charName);
+  if (chars === undefined) return bot.createMessage(msg.channel.id, `There's no char named **${charName}**!`);
+  console.log(chars);
+  const char = chars.filter(c => c.owner.discord_id === msg.author.id);
+  if (char.length === 0) return bot.createMessage(msg.channel.id, `You don't have any char named **${charName}**, <@${msg.author.id}>!`);
+  bot.createMessage(msg.channel.id, "" + char);
+};
+
+exports.showCharList = async (msg) => {
+  const user = msg.author.id;
+  const player = await mongoController.getPlayer(user);
+  if (player === undefined) return bot.createMessage(msg.channel.id, `You don't have any chars, <@${msg.author.id}>!`);
+  let message = '';
+  player[0].chars.forEach(c => {
+    console.log(c.name);
+    message += c.name + '\n';
+  });
+  bot.createMessage(msg.channel.id, "" + message);
 };
 
 const createChar = (charName) => {

@@ -60,6 +60,12 @@ exports.getChar = async (name) => {
   return result;
 };
 
+exports.getPlayer = async (id) => {
+  const result = await Player.find({ discord_id: id });
+  if (result.length === 0) return;
+  return result;
+};
+
 exports.getSkill = async (name) => {
   const result = await Skill.find({ name });
   if (result.length === 0) return;
