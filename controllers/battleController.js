@@ -7,11 +7,13 @@ const mongoController = require('./mongoController');
 
 let battles = [];
 let bot;
-let font;
+let font16;
+let font32;
 exports.setBot = async (b) => {
   bot = b;
   
-  font = await jimp.loadFont(jimp.FONT_SANS_32_BLACK);    
+  font16 = await jimp.loadFont(jimp.FONT_SANS_16_WHITE);    
+  font32 = await jimp.loadFont(jimp.FONT_SANS_32_WHITE);    
   
   
 };
@@ -169,7 +171,25 @@ exports.showChar = async (msg) => {
   if (chars === undefined) return bot.createMessage(msg.channel.id, `There's no char named **${charName}**!`);
   const char = chars.filter(c => c.owner.discord_id === msg.author.id);
   if (char.length === 0) return bot.createMessage(msg.channel.id, `You don't have any char named **${charName}**, <@${msg.author.id}>!`);
-  bot.createMessage(msg.channel.id, "" + char);
+  
+  const fg = await jimp.read('https://uccb301e0d0aa086ab65f3d6ef1c.dl.dropboxusercontent.com/cd/0/inline/ASxRMtoogOGnIT1W_QKvva6NR7Ls5ofjlGg-wpWdo3TlL0Eagkx_F5c1fQL3tjay3MDtKTgxpEmXsAA_2I9xgFszK6TA3Tw8LweZllspp_KFWhyBGUBfsNulDPpiPG81F6Pva4kVm4YiWziJqWkIMSBXmr5ERioqhd1tCGxlbi6rwIDD7PLgthjjsVbbZuGS6m0/file');
+  let c = char[0];
+  jimp.read(c.image).then(async(image) => {
+    let finalImage = await jimp.read(425, 425, 0x000000ff)
+    image.cover(428,250);
+    finalImage.blit(image,0,0);
+    finalImage.blit(fg, -3, -1);
+    finalImage.print(font32, 15, 10, c.name);
+    let fileo = c._id + '.' + finalImage.getExtension(); // with no extension
+    
+    finalImage.write(fileo, () => {
+      bot.createMessage(msg.channel.id,'',{file: fs.readFileSync(fileo), name: fileo});
+    });
+  })
+  .catch(err => {
+    // handle an exception
+  });
+
 };
 
 exports.showCharList = async (msg) => {
@@ -177,10 +197,15 @@ exports.showCharList = async (msg) => {
   const player = await mongoController.getPlayer(user);
   if (player === undefined) return bot.createMessage(msg.channel.id, `You don't have any chars, <@${msg.author.id}>!`);
   let message = '';
-  player[0].chars.forEach(c => {    
+  const bg = await jimp.read('https://melbournechapter.net/images/transparent-filter-black-1.png');
+
+  player[0].chars.forEach(c => {        
     jimp.read(c.image).then(image => {
-      image.cover(200,75);
-      image.print(font, 25, 20, c.name);
+      image.cover(300,100);
+      bg.cover(300,21);
+      
+      image.blit(bg, 0, 79);
+      image.print(font16, 15, 81, c.name);
       let fileo = player[0].discord_id + c._id + '.' + image.getExtension(); // with no extension
       
       image.write(fileo, () => {
@@ -188,7 +213,7 @@ exports.showCharList = async (msg) => {
       });
     })
     .catch(err => {
-      // handle an exception
+      console.log(err);
     });
   });
 };
