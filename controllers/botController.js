@@ -23,7 +23,7 @@ bot.on('ready', () => {
   // const now = moment();
   // console.log(before.diff(now, 'minutes'));
   
-  bot.editStatus("away", {name:"LoTR", type:3});
+  bot.editStatus("away", {name:"Conversa Fora", type:2});
   // const msg = {};
   // msg.content = commandSymbol + 'battle';
   // msg.author = {};

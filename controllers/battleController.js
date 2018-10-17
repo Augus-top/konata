@@ -174,15 +174,18 @@ exports.showChar = async (msg) => {
   const char = chars.filter(c => c.owner.discord_id === msg.author.id);
   if (char.length === 0) return bot.createMessage(msg.channel.id, `You don't have any char named **${charName}**, <@${msg.author.id}>!`);
   
-  const fg = await jimp.read('https://uc7a6039e1faec8d7da423fd7411.dl.dropboxusercontent.com/cd/0/inline/ATMYxWt_AX_qy3hTHiTBUXnOiJeoUzeEHmA-530DkupTg4Fz--_AT4I97iqQn8wcW6N9UxiDtTPDldwW3Tgqi5Eh4YZMVodfzb7fG2YNjd-ymUFgVcjjsUECMDJpLbAzWJi5q5A2A8VBlBrHv5yCwSSvSr4OKVPaziPYBUD7Pc901zngVh1UbH_p89ztD8lgLoo/file');
-  const lvlframe = await jimp.read('https://uc6f4c7b23afe71a7631ea499e03.dl.dropboxusercontent.com/cd/0/inline/ATPeUEW1HEMQmi1j2T7zWG88_uoueFJOaxlWSF52I4f2P3_Ztf3EwpLhIm7dqswAJ-nlcI28_UsX6AmHJGy8F3ob9fhKWnZgAWhtPX0sTvuIfeq0PfZiYLcGHKvLYqm8k2DyQmPnL_ujBSwOvasSFOAV14C3j0ccOutwhecHF6DXbGQOTDS-awUFZF0COcXDIOc/file');
+  const fg = await jimp.read('./profile.png');
+  const lvlframe = await jimp.read('./bglvl.png');
+  const lvlback = await jimp.read('./bgwhite.png');
   
   let c = char[0];
   jimp.read(c.image).then(async(image) => {
     let finalImage = await jimp.read(450, 450, 0x000000ff)
+    
     image.cover(450,280);
     finalImage.blit(image,0,0);
-    finalImage.blit(lvlframe,0,0);
+    finalImage.blit(lvlback,0,0);
+    finalImage.blit(lvlframe,-200,0);
     finalImage.blit(fg, 0, 0);
     finalImage.print(font32, 15, 10, c.name);
     finalImage.print(font32, 60, 270, c.hp);
@@ -191,9 +194,7 @@ exports.showChar = async (msg) => {
     finalImage.print(font32, 60, 405, c.speed);
     finalImage.print(font32b, 340, 5, c.level);
 
-
-    let fileo = c._id + '.' + finalImage.getExtension(); // with no extension
-    
+    let fileo = c._id + '.' + finalImage.getExtension(); // with no extension   
     finalImage.write(fileo, () => {
       bot.createMessage(msg.channel.id,'',{file: fs.readFileSync(fileo), name: fileo});
     });
@@ -209,7 +210,7 @@ exports.showCharList = async (msg) => {
   const player = await mongoController.getPlayer(user);
   if (player === undefined) return bot.createMessage(msg.channel.id, `You don't have any chars, <@${msg.author.id}>!`);
   let message = '';
-  const bg = await jimp.read('https://melbournechapter.net/images/transparent-filter-black-1.png');
+  const bg = await jimp.read('./bgblack.png');
 
   player[0].chars.forEach(c => {        
     jimp.read(c.image).then(image => {
