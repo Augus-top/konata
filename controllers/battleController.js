@@ -9,11 +9,13 @@ let battles = [];
 let bot;
 let font16;
 let font32;
+let font32b;
 exports.setBot = async (b) => {
   bot = b;
   
   font16 = await jimp.loadFont(jimp.FONT_SANS_16_WHITE);    
   font32 = await jimp.loadFont(jimp.FONT_SANS_32_WHITE);    
+  font32b = await jimp.loadFont(jimp.FONT_SANS_32_BLACK);    
   
   
 };
@@ -172,14 +174,24 @@ exports.showChar = async (msg) => {
   const char = chars.filter(c => c.owner.discord_id === msg.author.id);
   if (char.length === 0) return bot.createMessage(msg.channel.id, `You don't have any char named **${charName}**, <@${msg.author.id}>!`);
   
-  const fg = await jimp.read('https://uccb301e0d0aa086ab65f3d6ef1c.dl.dropboxusercontent.com/cd/0/inline/ASxRMtoogOGnIT1W_QKvva6NR7Ls5ofjlGg-wpWdo3TlL0Eagkx_F5c1fQL3tjay3MDtKTgxpEmXsAA_2I9xgFszK6TA3Tw8LweZllspp_KFWhyBGUBfsNulDPpiPG81F6Pva4kVm4YiWziJqWkIMSBXmr5ERioqhd1tCGxlbi6rwIDD7PLgthjjsVbbZuGS6m0/file');
+  const fg = await jimp.read('https://uc7a6039e1faec8d7da423fd7411.dl.dropboxusercontent.com/cd/0/inline/ATMYxWt_AX_qy3hTHiTBUXnOiJeoUzeEHmA-530DkupTg4Fz--_AT4I97iqQn8wcW6N9UxiDtTPDldwW3Tgqi5Eh4YZMVodfzb7fG2YNjd-ymUFgVcjjsUECMDJpLbAzWJi5q5A2A8VBlBrHv5yCwSSvSr4OKVPaziPYBUD7Pc901zngVh1UbH_p89ztD8lgLoo/file');
+  const lvlframe = await jimp.read('https://uc6f4c7b23afe71a7631ea499e03.dl.dropboxusercontent.com/cd/0/inline/ATPeUEW1HEMQmi1j2T7zWG88_uoueFJOaxlWSF52I4f2P3_Ztf3EwpLhIm7dqswAJ-nlcI28_UsX6AmHJGy8F3ob9fhKWnZgAWhtPX0sTvuIfeq0PfZiYLcGHKvLYqm8k2DyQmPnL_ujBSwOvasSFOAV14C3j0ccOutwhecHF6DXbGQOTDS-awUFZF0COcXDIOc/file');
+  
   let c = char[0];
   jimp.read(c.image).then(async(image) => {
-    let finalImage = await jimp.read(425, 425, 0x000000ff)
-    image.cover(428,250);
+    let finalImage = await jimp.read(450, 450, 0x000000ff)
+    image.cover(450,280);
     finalImage.blit(image,0,0);
-    finalImage.blit(fg, -3, -1);
+    finalImage.blit(lvlframe,0,0);
+    finalImage.blit(fg, 0, 0);
     finalImage.print(font32, 15, 10, c.name);
+    finalImage.print(font32, 60, 270, c.hp);
+    finalImage.print(font32, 60, 315, c.atk);
+    finalImage.print(font32, 60, 360, c.def);
+    finalImage.print(font32, 60, 405, c.speed);
+    finalImage.print(font32b, 340, 5, c.level);
+
+
     let fileo = c._id + '.' + finalImage.getExtension(); // with no extension
     
     finalImage.write(fileo, () => {
