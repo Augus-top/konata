@@ -9,7 +9,7 @@ if (!process.env['bot_token']) {
 const botToken = process.env['bot_token'] || keys.bot_token;
 const bot = new Eris(botToken);
 const commands = [];
-let commandSymbol = '!';
+let commandSymbol = '+';
 
 exports.connectBot = () => {
   bot.connect();
@@ -56,11 +56,6 @@ const createCommands = () => {
     action: (msg) => { battleController.startBattle(msg, bot); }
   });
   commands.push({
-    name: 'View Char',
-    condition: (msg) => { return msg.content.startsWith(commandSymbol + 'char'); },
-    action: (msg) => { battleController.viewChar(msg); }
-  });
-  commands.push({
     name: 'Join Battle',
     condition: (msg) => { return msg.content.startsWith(commandSymbol + 'join'); },
     action: (msg) => { battleController.joinBattle(msg); }
@@ -102,7 +97,7 @@ const createCommands = () => {
   });
   commands.push({
     name: 'See Chars',
-    condition: (msg) => { return msg.content.startsWith(commandSymbol + 'showchars'); },
+    condition: (msg) => { return msg.content.startsWith(commandSymbol + 'chars'); },
     action: (msg) => { battleController.showCharList(msg); }
   });
   commands.push({
@@ -151,14 +146,19 @@ const changeSymbol = (msg) => {
 };
 
 const showHelp = (msg) => {
-  let message = '```Command List:\n';
+  let message = '```Command List:\n\n';
   message += commandSymbol + 'ping: play pong\n';
+  message += '\n\n--------------battle---------------\n';
   message += commandSymbol + 'battle: start battle\n';
   message += commandSymbol + 'join: join current battle\n';
   message += commandSymbol + 'go + your char name: choose your battle char\n';
   message += commandSymbol + 'atk: do a normal atk\n';
   message += commandSymbol + 'use + skill name: use a skill to atk\n';
   message += commandSymbol + 'end: stop battles current happening\n';
+  message += '\n\n------------characters-------------\n';
+  message += commandSymbol + 'chars: list all player\'s characters\n';
+  message += commandSymbol + 'stats: show the stats of a character\n';
+
   message += commandSymbol + 'changeSymbol: change current command symbol\n';
 
   message += '```';
