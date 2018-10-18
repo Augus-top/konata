@@ -9,7 +9,7 @@ if (!process.env['bot_token']) {
 const botToken = process.env['bot_token'] || keys.bot_token;
 const bot = new Eris(botToken);
 const commands = [];
-let commandSymbol = '+';
+let commandSymbol = '!';
 
 exports.connectBot = () => {
   bot.connect();
@@ -147,7 +147,7 @@ const changeSymbol = (msg) => {
 
 const showHelp = (msg) => {
   let message = '```Command List:\n\n';
-  message += commandSymbol + 'ping: play pong\n';
+  
   message += '\n\n--------------battle---------------\n';
   message += commandSymbol + 'battle: start battle\n';
   message += commandSymbol + 'join: join current battle\n';
@@ -158,7 +158,9 @@ const showHelp = (msg) => {
   message += '\n\n------------characters-------------\n';
   message += commandSymbol + 'chars: list all player\'s characters\n';
   message += commandSymbol + 'stats: show the stats of a character\n';
-
+  message += commandSymbol + 'setImage: change the character image\n';
+  message += '\n\n--------------control---------------\n';
+  message += commandSymbol + 'ping: play pong\n';
   message += commandSymbol + 'changeSymbol: change current command symbol\n';
 
   message += '```';
