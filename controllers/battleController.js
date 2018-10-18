@@ -192,6 +192,9 @@ exports.showChar = async (msg) => {
     finalImage.print(font32, 60, 315, c.atk);
     finalImage.print(font32, 60, 360, c.def);
     finalImage.print(font32, 60, 405, c.speed);
+    for(let i = 0; i < c.skills.length; i++){
+      finalImage.print(font32, 250, 270 + (i*35), c.skills[i].name + ' ('+c.skills[i].atk+')');
+    }
     finalImage.print(font32b, 340, 5, c.level);
 
     let fileo = c._id + '.' + finalImage.getExtension(); // with no extension   
