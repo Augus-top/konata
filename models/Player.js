@@ -7,6 +7,7 @@ const PlayerSchema = new Schema({
   wins: Number,
   loses: Number,
   level: Number,
+  xp: Number,
   chars: [{ type: Schema.Types.ObjectId, ref: 'Char', autopopulate: { maxDepth: 1 } }]
 });
 PlayerSchema.plugin(autopopulate);

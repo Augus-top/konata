@@ -1,5 +1,6 @@
 const Eris = require('eris');
 const battleController = require('./battleController');
+const utils = require('../utils/utils');
 let keys;
 
 if (!process.env['bot_token']) {
@@ -9,7 +10,7 @@ if (!process.env['bot_token']) {
 const botToken = process.env['bot_token'] || keys.bot_token;
 const bot = new Eris(botToken);
 const commands = [];
-let commandSymbol = '!';
+let commandSymbol = '+';
 
 exports.connectBot = () => {
   bot.connect();
@@ -25,6 +26,7 @@ bot.on('ready', () => {
   
   bot.editStatus("away", {name:"Conversa Fora", type:2});
   // const msg = {};
+
   // msg.content = commandSymbol + 'battle';
   // msg.author = {};
   // msg.channel = {};
@@ -71,11 +73,6 @@ const createCommands = () => {
     action: (msg) => { battleController.setCharImage(msg); }
   });
   commands.push({
-    name: 'Atk during battle',
-    condition: (msg) => { return msg.content.startsWith(commandSymbol + 'atk'); },
-    action: (msg) => { battleController.executeAtk(msg); }
-  });
-  commands.push({
     name: 'Use Skill during battle',
     condition: (msg) => { return msg.content.startsWith(commandSymbol + 'use'); },
     action: (msg) => { battleController.useSkill(msg); }
@@ -109,11 +106,6 @@ const createCommands = () => {
     name: 'Test go char',
     condition: (msg) => { return msg.content.startsWith(commandSymbol + 'testgo'); },
     action: (msg) => { testChar(msg); }
-  });
-  commands.push({
-    name: 'Test Atk',
-    condition: (msg) => { return msg.content.startsWith(commandSymbol + 'testatk'); },
-    action: (msg) => { testAtk(msg); }
   });
   commands.push({
     name: 'Test skill',
@@ -152,7 +144,6 @@ const showHelp = (msg) => {
   message += commandSymbol + 'battle: start battle\n';
   message += commandSymbol + 'join: join current battle\n';
   message += commandSymbol + 'go + your char name: choose your battle char\n';
-  message += commandSymbol + 'atk: do a normal atk\n';
   message += commandSymbol + 'use + skill name: use a skill to atk\n';
   message += commandSymbol + 'end: stop battles current happening\n';
   message += '\n\n------------characters-------------\n';
