@@ -2,6 +2,7 @@ const express = require('express');
 
 const dbController = require('../controllers/mongoController');
 const Char = require('../models/Char');
+const Skill = require('../models/Skill');
 const asyncHandler = require('../utils/utils');
 
 const router = express.Router();
@@ -27,6 +28,18 @@ router.put('/:id', async (req, res) => {
 });
   
 router.delete('/:id', async (req, res) => {
+  const char = await asyncHandler.handleAsyncMethod(dbController.getSchemaById, [Char, req.params.id]);
+  char.skills.forEach(s => {
+    console.log(s);
+    asyncHandler.handleAsyncMethod(dbController.deleteSchema [Skill, s._id]);
+  });
+  const player = char.owner;
+  player.chars.forEach((c) => {
+    if (c === char._id) {
+      return player.chars.remove(c);;
+    }
+  });
+  player.save();
   const result = await asyncHandler.handleAsyncMethod(dbController.deleteSchema, [Char, req.params.id]);
   result !== 'error' ? res.send(result) : res.send({'error': 'An error has occurred'});
 });
