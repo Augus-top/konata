@@ -48,7 +48,8 @@ exports.registerPlayer = async (playerId) => {
     discord_id: playerId,
     wins: 0,
     loses: 0,
-    level: 1
+    level: 1,
+    xp: 0
   };
   const resultCreate = await this.createSchema(Player, newPlayer);
   return resultCreate;
@@ -63,7 +64,7 @@ exports.getChar = async (name) => {
 exports.getPlayer = async (id) => {
   const result = await Player.find({ discord_id: id });
   if (result.length === 0) return;
-  return result;
+  return result[0];
 };
 
 exports.getSkill = async (name) => {

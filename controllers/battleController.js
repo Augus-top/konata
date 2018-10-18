@@ -4,12 +4,14 @@ const fs = require('fs');
 const request = require('request-promise');
 const utils = require('../utils/utils');
 const mongoController = require('./mongoController');
+const PlayerSchema = require('../models/Player');
 
 let battles = [];
 let bot;
 let font16;
 let font32;
 let font32b;
+
 exports.setBot = async (b) => {
   bot = b;
   
@@ -73,10 +75,14 @@ exports.chooseChar = (msg) => {
   const user = msg.author.id;
   let currentBattle = battles.filter(b => b.place === msg.channel.id);
   currentBattle = currentBattle[0];
-  if (!currentBattle && (currentBattle.firstPlayer !== user || currentBattle.secondPlayer !== user)) {
+  if (currentBattle === undefined) return bot.createMessage(msg.channel.id, 'No Battles in this channel!');
+  if (currentBattle.firstPlayerChar !== undefined && currentBattle.secondPlayerChar !== undefined) {
     return bot.createMessage(msg.channel.id, 'You\'re not in battle!');
   }
-  const charName = msg.content.split(' ').slice(1).join(' ');
+  const params = msg.content.split(' ').slice(1).join(' ').split('http');
+  let image;
+  if (params.length > 1) image = 'http' + params[1];
+  const charName = (params.length > 1) ? params[0].substring(0, params[0].length - 1) : params[0];
   if (!/\S/.test(charName)) {
     return bot.createMessage(msg.channel.id, 'Char name can\'t be blank!');
   }
@@ -84,8 +90,8 @@ exports.chooseChar = (msg) => {
   if (currentBattle[userPosition + 'Char']) {
     return bot.createMessage(msg.channel.id, 'Already choosed!');
   }
-  if (currentBattle.secondPlayer === undefined) currentBattle.secondPlayer = msg.author.id;
-  this.updateBattleChar(msg, currentBattle, user, charName, userPosition);
+  if (currentBattle.secondPlayer === undefined && msg.author.id !== currentBattle.firstPlayer) currentBattle.secondPlayer = msg.author.id;
+  this.updateBattleChar(msg, currentBattle, user, charName, userPosition, image);
 };
 
 exports.setCharImage = async (msg) => {
@@ -107,9 +113,14 @@ exports.setCharImage = async (msg) => {
   // userChar.image = charImage;
 };
 
-exports.updateBattleChar = async (msg, currentBattle, user, charName, userPosition) => {
+exports.updateBattleChar = async (msg, currentBattle, user, charName, userPosition, image) => {
   const char = await prepareChar(charName, user, msg);
   if (char === undefined) return;
+  if (image !== undefined) {
+    char.image = image;
+    char.save();
+  }
+  char.originalHP = char.hp;
   currentBattle[userPosition + 'Char'] = char;
   bot.createMessage(msg.channel.id, `Choosed ${charName}!`);
   if (currentBattle.firstPlayerChar && currentBattle.secondPlayerChar) {
@@ -147,6 +158,11 @@ exports.useSkill = async (msg) => {
     return bot.createMessage(msg.channel.id, 'Skill name can\'t be blank!');
   }
   const skill = await prepareSkill(skillName, battleTurn, msg.author.id, msg);
+  const hit = utils.generateRandomInteger(1, 2);
+  if (skill.accuracy < battleTurn.enemyChar.evasion && hit === 1) {
+    bot.createMessage(msg.channel.id, `${skill.name} missed!`);
+    return this.checkBattleState(msg, battleTurn.currentBattle);
+  }
   const dmg = (skill.atk > battleTurn.enemyChar.def) ? skill.atk : Math.round(skill.atk / 2);
   battleTurn.enemyChar.hp -= dmg;
   bot.createMessage(msg.channel.id, prepareEmbed(battleTurn, skill, dmg));
@@ -159,12 +175,69 @@ exports.checkBattleState = (msg, currentBattle) => {
     bot.createMessage(msg.channel.id, `Your turn, <@${currentBattle.currentPlayer}>!`);
     return;
   }
-  const loserChar = (currentBattle.firstPlayerChar.hp <= 0) ? currentBattle.firstPlayerChar.name : currentBattle.secondPlayerChar.name;
-  const winnerChar = (currentBattle.firstPlayerChar.hp <= 0) ? currentBattle.secondPlayerChar.name : currentBattle.firstPlayerChar.name;
+  const loserChar = (currentBattle.firstPlayerChar.hp <= 0) ? currentBattle.firstPlayerChar : currentBattle.secondPlayerChar;
+  const loserUser = (currentBattle.firstPlayerChar.hp <= 0) ? currentBattle.firstPlayer : currentBattle.secondPlayer;
+  const winnerChar = (currentBattle.firstPlayerChar.hp <= 0) ? currentBattle.secondPlayerChar : currentBattle.firstPlayerChar;
   const winnerUser = (currentBattle.firstPlayerChar.hp <= 0) ? currentBattle.secondPlayer : currentBattle.firstPlayer;
-  bot.createMessage(msg.channel.id, `${loserChar} fainted!\n${winnerChar} wins!`);
+  bot.createMessage(msg.channel.id, `${loserChar.name} fainted!\n${winnerChar.name} wins!`);
   bot.createMessage(msg.channel.id, `Congratulations, <@${winnerUser}>!`);
   battles = battles.filter(b => b.place !== currentBattle.place);
+  this.updateBattlePlayers(msg, winnerUser, loserUser, winnerChar);
+};
+
+exports.updateBattlePlayers = async (msg, winnerId, loserId, char) => {
+  const player = await mongoController.getPlayer(winnerId);
+  const loser = await mongoController.getPlayer(loserId);
+  player.xp += 50;
+  console.log(player.xp);
+  player.wins++;
+  loser.loses++;
+  if (player.xp % 100 === 0) {
+    player.level++;
+    bot.createMessage(msg.channel.id, `<@${player.discord_id}>, you have leveled up!\nYour current level is ${player.level}`);
+  }
+  player.save();
+  loser.save();
+  this.updateWinnerChar(msg, player, char);
+};
+
+exports.updateWinnerChar = (msg, player, char) => {
+  char.xp += 50;
+  console.log(char.xp);
+  char.hp = char.originalHP;
+  console.log(char.originalHP);
+  if (char.xp % 50 !== 0) {
+    return;
+  }
+  char.level++;
+  bot.createMessage(msg.channel.id, `<@${player.discord_id}>, ${char.name} has leveled up!\n${char.name} current level is ${char.level}`);
+  char.skills.forEach((s) => {
+    const randSkill = utils.generateRandomInteger(1, 3);
+    if (randSkill === 1) {
+      s.atk++;
+      bot.createMessage(msg.channel.id, `Skill ${s.name} atk has upgraded!\n current atk is ${s.atk}`);
+    }
+    if (randSkill === 2) {
+      s.accuracy++;
+      bot.createMessage(msg.channel.id, `Skill ${s.name} accuracy has upgraded!\n current accuracy is ${s.accuracy}`);
+    }
+    s.save();
+  });
+  const randStats = utils.generateRandomInteger(1, 3);
+  switch (randStats) {
+    case 1:
+      char.hp++;
+      bot.createMessage(msg.channel.id, `${char.name}'s hp has upgraded!\n current hp is ${char.hp}`);
+      break;
+    case 2:
+      char.def++;
+      bot.createMessage(msg.channel.id, `${char.name}'s def has upgraded!\n current def is ${char.def}`);
+      break;
+    default:
+      char.evasion++;
+      bot.createMessage(msg.channel.id, `${char.name}'s evasion has upgraded!\n current evasion is ${char.evasion}`);
+  }
+  char.save();
 };
 
 exports.showChar = async (msg) => {
@@ -180,7 +253,7 @@ exports.showChar = async (msg) => {
   
   let c = char[0];
   jimp.read(c.image).then(async(image) => {
-    let finalImage = await jimp.read(450, 450, 0x000000ff)
+    let finalImage = await jimp.read(450, 450, 0x000000ff);
     
     image.cover(450,280);
     finalImage.blit(image,0,0);
@@ -215,14 +288,14 @@ exports.showCharList = async (msg) => {
   let message = '';
   const bg = await jimp.read('./bgblack.png');
 
-  player[0].chars.forEach(c => {        
+  player.chars.forEach(c => {        
     jimp.read(c.image).then(image => {
       image.cover(300,100);
       bg.cover(300,21);
       
       image.blit(bg, 0, 79);
       image.print(font16, 15, 81, c.name);
-      let fileo = player[0].discord_id + c._id + '.' + image.getExtension(); // with no extension
+      let fileo = player.discord_id + c._id + '.' + image.getExtension(); // with no extension
       
       image.write(fileo, () => {
         bot.createMessage(msg.channel.id,'',{file: fs.readFileSync(fileo), name: fileo});
@@ -237,12 +310,13 @@ exports.showCharList = async (msg) => {
 const createChar = (charName) => {
   const newChar = {
     name: charName,
-    hp: utils.generateRandomInteger(50, 100),
+    hp: utils.generateRandomInteger(100, 150),
     atk: utils.generateRandomInteger(20, 100),
     def: utils.generateRandomInteger(20, 99),
     speed: utils.generateRandomInteger(1, 100),
     evasion: utils.generateRandomInteger(1, 100),
     level: 1,
+    xp: 0,
     status: 'none',
     image: 'https://vignette.wikia.nocookie.net/ultimate-pokemon-fanon/images/8/85/Missingno_drawing_by_aerostat-d4krmly.jpg/revision/latest?cb=20130916223342'
   };

@@ -12,6 +12,7 @@ const CharSchema = new Schema({
   evasion: Number,
   level: Number,
   status: String,
+  xp: Number,
   skills: [{ type: Schema.Types.ObjectId, ref: 'Skill', autopopulate: { maxDepth: 1 } }],
   owner: { type: Schema.Types.ObjectId, ref: 'Player', autopopulate: { maxDepth: 1 } }
 });
