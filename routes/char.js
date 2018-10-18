@@ -29,10 +29,7 @@ router.put('/:id', async (req, res) => {
   
 router.delete('/:id', async (req, res) => {
   const char = await asyncHandler.handleAsyncMethod(dbController.getSchemaById, [Char, req.params.id]);
-  char.skills.forEach(s => {
-    console.log(s);
-    asyncHandler.handleAsyncMethod(dbController.deleteSchema [Skill, s._id]);
-  });
+  char.skills.forEach(s => asyncHandler.handleAsyncMethod(dbController.deleteSchema, [Skill, s._id]));
   const player = char.owner;
   player.chars.forEach((c) => {
     if (c === char._id) {
