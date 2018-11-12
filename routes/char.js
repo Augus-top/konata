@@ -33,7 +33,7 @@ router.delete('/:id', async (req, res) => {
   const player = char.owner;
   player.chars.forEach((c) => {
     if (c === char._id) {
-      return player.chars.remove(c);;
+      return player.chars.remove(c);
     }
   });
   player.save();

@@ -41,20 +41,6 @@ exports.deleteSchema = async (Schema, id) => {
   await Schema.findByIdAndRemove(id);
 };
 
-exports.registerPlayer = async (playerId) => {
-  const result = await this.getSchemaByProperty(Player, 'discord_id', playerId);
-  if (result.length !== 0) return;
-  const newPlayer = {
-    discord_id: playerId,
-    wins: 0,
-    loses: 0,
-    level: 1,
-    xp: 0
-  };
-  const resultCreate = await this.createSchema(Player, newPlayer);
-  return resultCreate;
-};
-
 exports.getChar = async (name) => {
   const result = await Char.find({ name });
   if (result.length === 0) return;

@@ -1,6 +1,10 @@
 const Eris = require('eris');
 const battleController = require('./battleController');
-const utils = require('../utils/utils');
+const charController = require('./charController');
+const skillController = require('./skillController');
+const playerController = require('./playerController');
+const viewController = require('./viewController');
+
 let keys;
 
 if (!process.env['bot_token']) {
@@ -19,14 +23,16 @@ exports.connectBot = () => {
 bot.on('ready', () => {
   createCommands();
   battleController.setBot(bot);
+  charController.setBot(bot);
+  skillController.setBot(bot);
+  playerController.setBot(bot);
+  viewController.setBot(bot);
   console.log('Konata up and ready desu');
   // const before = moment('2018-09-27T08:50:25-03:00');
   // const now = moment();
   // console.log(before.diff(now, 'minutes'));
-  
-  bot.editStatus("away", {name:"Conversa Fora", type:2});
+  bot.editStatus('away', { name: 'Conversa Fora', type: 2 });
   // const msg = {};
-
   // msg.content = commandSymbol + 'battle';
   // msg.author = {};
   // msg.channel = {};
@@ -65,17 +71,17 @@ const createCommands = () => {
   commands.push({
     name: 'Choose Char',
     condition: (msg) => { return msg.content.startsWith(commandSymbol + 'go'); },
-    action: (msg) => { battleController.chooseChar(msg); }
+    action: (msg) => { battleController.chooseBattleChar(msg); }
   });
   commands.push({
     name: 'Set Char Image',
     condition: (msg) => { return msg.content.startsWith(commandSymbol + 'setImage'); },
-    action: (msg) => { battleController.setCharImage(msg); }
+    action: (msg) => { charController.setCharImage(msg); }
   });
   commands.push({
     name: 'Use Skill during battle',
     condition: (msg) => { return msg.content.startsWith(commandSymbol + 'use'); },
-    action: (msg) => { battleController.useSkill(msg); }
+    action: (msg) => { battleController.useBattleSkill(msg); }
   });
   commands.push({
     name: 'Change command symbol',
@@ -90,12 +96,12 @@ const createCommands = () => {
   commands.push({
     name: 'See Char Stats',
     condition: (msg) => { return msg.content.startsWith(commandSymbol + 'stats'); },
-    action: (msg) => { battleController.showChar(msg); }
+    action: (msg) => { charController.showChar(msg); }
   });
   commands.push({
     name: 'See Chars',
     condition: (msg) => { return msg.content.startsWith(commandSymbol + 'chars'); },
-    action: (msg) => { battleController.showCharList(msg); }
+    action: (msg) => { playerController.showPlayerCharList(msg); }
   });
   commands.push({
     name: 'Test battle system',
@@ -138,8 +144,7 @@ const changeSymbol = (msg) => {
 };
 
 const showHelp = (msg) => {
-  let message = '```Command List:\n\n';
-  
+  let message = '```Command List:';
   message += '\n\n--------------battle---------------\n';
   message += commandSymbol + 'battle: start battle\n';
   message += commandSymbol + 'join: join current battle\n';
